@@ -523,15 +523,20 @@
             height: 8px;
             border-radius: 4px;
             position: relative;
-            overflow: hidden;
         }
 
         .slider-track input[type="range"] {
             width: 100%;
-            height: 100%;
+            height: 16px;
+            margin-top: -4px;
             -webkit-appearance: none;
             background: transparent;
             cursor: pointer;
+        }
+
+        .slider-track input[type="range"]::-webkit-slider-runnable-track {
+            height: 8px;
+            background: transparent;
         }
 
         .slider-track input[type="range"]::-webkit-slider-thumb {
@@ -543,6 +548,7 @@
             border: 2px solid var(--bg-primary);
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
             cursor: grab;
+            margin-top: -4px;
         }
 
         .slider-track input[type="range"]::-webkit-slider-thumb:active {
@@ -1232,8 +1238,51 @@
             color: var(--text-primary);
             font-family: 'JetBrains Mono', monospace;
             font-size: 13px;
-            text-align: center;
-            text-transform: uppercase;
+        }
+
+        /* Black Button for Color Wheels */
+        .black-btn {
+            width: 32px;
+            height: 32px;
+            background: #000000;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .black-btn:hover {
+            transform: scale(1.1);
+            border-color: var(--text-secondary);
+        }
+
+        .black-btn:active {
+            transform: scale(0.95);
+        }
+
+        .wheel-with-black {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding-top: 20px;
+        }
+
+        .a11y-color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .a11y-black-btn {
+            width: 24px;
+            height: 24px;
+        }
+
+        .gradient-black-btn {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
         }
 
         /* Color input popup */
@@ -1448,7 +1497,7 @@
         <header class="header">
             <div class="logo">
                 <div class="logo-icon"></div>
-                <h1>Chromatic</h1>
+                <h1>ColorPicker</h1>
             </div>
             <nav class="nav-tabs">
                 <button class="nav-tab active" data-view="wheel">Color Wheel</button>
@@ -1485,8 +1534,11 @@
             <!-- Color Wheel View -->
             <section class="view wheel-view active" id="wheelView">
                 <div class="wheel-section">
-                    <div class="wheel-container" id="wheelContainer">
-                        <canvas id="colorWheel"></canvas>
+                    <div class="wheel-with-black">
+                        <div class="wheel-container" id="wheelContainer">
+                            <canvas id="colorWheel"></canvas>
+                        </div>
+                        <button class="black-btn" id="mainBlackBtn" title="Set to Black"></button>
                     </div>
                     <div class="panel-card" style="margin-top:20px;">
                         <div class="hex-group" style="margin-bottom:16px;">
@@ -1728,9 +1780,12 @@
                         <div style="display:flex;gap:24px;align-items:flex-start;justify-content:center;flex-wrap:wrap;">
                             <div class="a11y-color-group">
                                 <label>Foreground</label>
-                                <div class="a11y-color-picker" id="fgPicker">
-                                    <canvas id="fgWheel"></canvas>
-                                    <div class="a11y-handle" id="fgHandle"></div>
+                                <div class="a11y-color-picker-wrapper">
+                                    <div class="a11y-color-picker" id="fgPicker">
+                                        <canvas id="fgWheel"></canvas>
+                                        <div class="a11y-handle" id="fgHandle"></div>
+                                    </div>
+                                    <button class="black-btn a11y-black-btn" id="fgBlackBtn" title="Set to Black"></button>
                                 </div>
                                 <input type="text" class="a11y-hex-input" id="fgColor" value="#000000">
                             </div>
@@ -1741,9 +1796,12 @@
                             </button>
                             <div class="a11y-color-group">
                                 <label>Background</label>
-                                <div class="a11y-color-picker" id="bgPicker">
-                                    <canvas id="bgWheel"></canvas>
-                                    <div class="a11y-handle" id="bgHandle"></div>
+                                <div class="a11y-color-picker-wrapper">
+                                    <div class="a11y-color-picker" id="bgPicker">
+                                        <canvas id="bgWheel"></canvas>
+                                        <div class="a11y-handle" id="bgHandle"></div>
+                                    </div>
+                                    <button class="black-btn a11y-black-btn" id="bgBlackBtn" title="Set to Black"></button>
                                 </div>
                                 <input type="text" class="a11y-hex-input" id="bgColor" value="#FFFFFF">
                             </div>
@@ -2608,7 +2666,8 @@
 
             $('applyExtracted').addEventListener('click', () => {
                 if (state.extractedColors.length) {
-                    state.colors = state.extractedColors.slice(0, state.colorCount).map(hex => {
+                    const colorsToApply = state.extractedColors.slice(0, state.colorCount);
+                    state.colors = colorsToApply.map(hex => {
                         const [r, g, b] = ColorUtils.hexToRgb(hex);
                         const [h, s, br] = ColorUtils.rgbToHsb(r, g, b);
                         return { h, s, b: br };
@@ -2618,7 +2677,11 @@
                     document.querySelector('[data-harmony="custom"]').classList.add('active');
                     updateHandles();
                     updateUI();
-                    showToast('Colors applied to palette!');
+                    if (state.extractedColors.length > state.colorCount) {
+                        showToast(`Applied ${state.colorCount} of ${state.extractedColors.length} colors (palette limit)`);
+                    } else {
+                        showToast('Colors applied to palette!');
+                    }
                 }
             });
 
@@ -2659,6 +2722,13 @@
                     updateHandles();
                     updateUI();
                 }
+            });
+
+            // Main black button
+            $('mainBlackBtn').addEventListener('click', () => {
+                state.colors[state.selectedIndex] = { h: 0, s: 0, b: 0 };
+                updateHandles();
+                updateUI();
             });
 
             // Save palette
@@ -2777,6 +2847,7 @@
                         <div class="gradient-color-swatch" style="background:${stop.color}">
                             <input type="color" value="${stop.color}" data-index="${i}">
                         </div>
+                        <button class="black-btn gradient-black-btn" data-index="${i}" title="Set to Black"></button>
                         <div class="gradient-color-controls">
                             <div class="gradient-color-hex">${stop.color.toUpperCase()}</div>
                             <div class="gradient-position-row">
@@ -2790,6 +2861,12 @@
                     // Color picker change
                     item.querySelector('input[type="color"]').addEventListener('input', e => {
                         state.gradientStops[i].color = e.target.value;
+                        renderGradient();
+                    });
+
+                    // Black button
+                    item.querySelector('.gradient-black-btn').addEventListener('click', e => {
+                        state.gradientStops[i].color = '#000000';
                         renderGradient();
                     });
 
@@ -3011,6 +3088,21 @@
             });
 
             updateContrast();
+
+            // Black button handlers for accessibility wheels
+            $('fgBlackBtn').addEventListener('click', () => {
+                a11yState.fg = { h: 0, s: 0, b: 0 };
+                $('fgColor').value = '#000000';
+                updateA11yHandle('fgHandle', 'fg');
+                updateContrast();
+            });
+
+            $('bgBlackBtn').addEventListener('click', () => {
+                a11yState.bg = { h: 0, s: 0, b: 0 };
+                $('bgColor').value = '#000000';
+                updateA11yHandle('bgHandle', 'bg');
+                updateContrast();
+            });
         }
 
         function updateContrast() {
@@ -3099,18 +3191,8 @@
             const container = $('extractedColors');
             container.innerHTML = '';
 
-            // Show warning if too many colors
-            if (state.extractedColors.length > 10) {
-                const warning = document.createElement('p');
-                warning.style.cssText = 'color:var(--warning);font-size:13px;margin-bottom:12px;';
-                warning.textContent = 'Too many colors for palette. Showing top 10.';
-                container.appendChild(warning);
-            }
-
-            // Only show first 10 colors
-            const colorsToShow = state.extractedColors.slice(0, 10);
-
-            colorsToShow.forEach((hex, i) => {
+            // Show all extracted colors
+            state.extractedColors.forEach((hex, i) => {
                 const div = document.createElement('div');
                 div.className = 'extracted-color';
                 div.innerHTML = `
