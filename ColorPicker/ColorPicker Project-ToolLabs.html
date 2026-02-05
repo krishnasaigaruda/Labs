@@ -3228,12 +3228,38 @@
         }
 
         // ==================== EXPORT ====================
+        function getActiveViewColors() {
+            const activeView = document.querySelector('.view.active');
+            const viewId = activeView ? activeView.id : 'wheelView';
+
+            switch (viewId) {
+                case 'extractView':
+                    return state.extractedColors.map((hex, i) => ({
+                        hex: hex,
+                        name: `extracted-${i + 1}`
+                    }));
+                case 'gradientView':
+                    return state.gradientStops.map((stop, i) => ({
+                        hex: stop.color,
+                        name: `gradient-${i + 1}`
+                    }));
+                case 'a11yView':
+                    return ['fg', 'bg'].map((key, i) => {
+                        const c = a11yState[key];
+                        const [r, g, b] = ColorUtils.hsbToRgb(c.h, c.s, c.b);
+                        return { hex: '#' + ColorUtils.rgbToHex(r, g, b), name: key === 'fg' ? 'foreground' : 'background' };
+                    });
+                default: // wheelView
+                    return state.colors.map((c, i) => {
+                        const [r, g, b] = ColorUtils.hsbToRgb(c.h, c.s, c.b);
+                        return { hex: '#' + ColorUtils.rgbToHex(r, g, b), name: `color-${i + 1}` };
+                    });
+            }
+        }
+
         function updateExportPreview() {
             const format = document.querySelector('.export-option.active').dataset.format;
-            const colors = state.colors.map((c, i) => {
-                const [r, g, b] = ColorUtils.hsbToRgb(c.h, c.s, c.b);
-                return { hex: '#' + ColorUtils.rgbToHex(r, g, b), name: `color-${i + 1}` };
-            });
+            const colors = getActiveViewColors();
 
             let code = '';
             switch (format) {
@@ -3259,10 +3285,7 @@
 
         function downloadExport() {
             const format = document.querySelector('.export-option.active').dataset.format;
-            const colors = state.colors.map(c => {
-                const [r, g, b] = ColorUtils.hsbToRgb(c.h, c.s, c.b);
-                return '#' + ColorUtils.rgbToHex(r, g, b);
-            });
+            const colors = getActiveViewColors().map(c => c.hex);
 
             if (format === 'png') {
                 const canvas = document.createElement('canvas');
