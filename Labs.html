@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToolLabs — Experimental Tools for Creators</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-primary: #0a0a0b;
+            --bg-secondary: #141416;
+            --bg-tertiary: #1c1c1f;
+            --bg-elevated: #242428;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1a6;
+            --text-tertiary: #6e6e73;
+            --border: #2c2c2e;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --radius-lg: 20px;
+            --shadow: 0 4px 24px rgba(0,0,0,0.4);
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── Header ── */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 32px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .header-logo-icon {
+            width: 30px;
+            height: 30px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .header-logo-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .header-logo h1 {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+            white-space: nowrap;
+        }
+
+        .header-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--accent);
+            background: rgba(99, 102, 241, 0.12);
+            padding: 3px 8px;
+            border-radius: 100px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        /* Nav */
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .header-nav a {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .header-nav a:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .header-nav a.active {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        /* Search */
+        .header-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .header-search {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 7px 16px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .header-search:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .header-search svg {
+            width: 15px;
+            height: 15px;
+            color: var(--text-tertiary);
+            flex-shrink: 0;
+        }
+
+        .header-search input {
+            flex: 1;
+            background: none;
+            border: none;
+            outline: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        .header-search input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .header-search kbd {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-tertiary);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            padding: 2px 6px;
+            border-radius: 4px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        /* Right actions */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .header-icon-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .header-icon-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .header-icon-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .header-icon-btn .notif-dot {
+            position: absolute;
+            top: 7px;
+            right: 8px;
+            width: 7px;
+            height: 7px;
+            background: var(--accent);
+            border-radius: 50%;
+            border: 2px solid var(--bg-secondary);
+        }
+
+        .header-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            cursor: pointer;
+            margin-left: 4px;
+            transition: box-shadow 0.2s;
+        }
+
+        .header-avatar:hover {
+            box-shadow: 0 0 0 2px var(--bg-secondary), 0 0 0 4px var(--accent);
+        }
+
+        /* ── Notification Dropdown ── */
+        .notif-wrapper {
+            position: relative;
+        }
+
+        .notif-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: 360px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-4px);
+            transition: all 0.2s ease;
+            z-index: 200;
+            overflow: hidden;
+        }
+
+        .notif-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .notif-dropdown-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .notif-dropdown-header h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .notif-count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--accent);
+            background: rgba(99, 102, 241, 0.12);
+            padding: 2px 8px;
+            border-radius: 100px;
+        }
+
+        .notif-list {
+            max-height: 320px;
+            overflow-y: auto;
+            list-style: none;
+        }
+
+        .notif-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .notif-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .notif-list::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        .notif-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(44, 44, 46, 0.5);
+            transition: background 0.15s;
+        }
+
+        .notif-item:last-child {
+            border-bottom: none;
+        }
+
+        .notif-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .notif-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            background: rgba(99, 102, 241, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .notif-icon svg {
+            width: 16px;
+            height: 16px;
+            color: var(--accent);
+        }
+
+        .notif-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notif-msg {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .notif-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .notif-hash {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--accent);
+            opacity: 0.8;
+        }
+
+        .notif-time {
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+
+        .notif-dropdown-footer {
+            padding: 10px 16px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .notif-dropdown-footer span {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── Hero ── */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 100px 32px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-flask {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 40px;
+            position: relative;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .hero-flask svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 30px rgba(99, 102, 241, 0.3));
+        }
+
+        /* Bubbling animation inside flask */
+        .bubble {
+            animation: rise var(--dur) ease-in infinite;
+            animation-delay: var(--delay);
+            opacity: 0;
+        }
+
+        @keyframes rise {
+            0%   { opacity: 0; transform: translateY(0) scale(1); }
+            20%  { opacity: 0.8; }
+            100% { opacity: 0; transform: translateY(-30px) scale(0.4); }
+        }
+
+        .hero-title {
+            font-size: 56px;
+            font-weight: 700;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #ffffff 0%, var(--accent-hover) 50%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            max-width: 440px;
+            line-height: 1.6;
+        }
+
+        /* ── Projects Section ── */
+        .projects {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 32px 100px;
+        }
+
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 24px;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        /* ── Project Card ── */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .card-preview {
+            height: 200px;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-preview svg {
+            width: 140px;
+            height: 140px;
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover .card-preview svg {
+            transform: scale(1.08) rotate(15deg);
+        }
+
+        .card-preview::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 60%, var(--bg-secondary));
+            pointer-events: none;
+        }
+
+        .card-body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .card-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            background: rgba(99, 102, 241, 0.1);
+            padding: 4px 10px;
+            border-radius: 100px;
+            width: fit-content;
+        }
+
+        .card-title {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .card-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .card-arrow {
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--accent);
+            transition: gap 0.2s ease;
+        }
+
+        .card:hover .card-arrow {
+            gap: 12px;
+        }
+
+        .card-arrow svg {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover .card-arrow svg {
+            transform: translateX(2px);
+        }
+
+        /* ── Footer ── */
+        .footer {
+            margin-top: auto;
+            padding: 32px;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            background: var(--bg-secondary);
+        }
+
+        .footer-text {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        .footer-text span {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .header-nav {
+                display: none;
+            }
+
+            .header-center {
+                max-width: 320px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero {
+                padding: 64px 20px 48px;
+            }
+
+            .hero-title {
+                font-size: 36px;
+                letter-spacing: -1px;
+            }
+
+            .hero-subtitle {
+                font-size: 15px;
+            }
+
+            .hero-flask {
+                width: 88px;
+                height: 88px;
+                margin-bottom: 28px;
+            }
+
+            .projects {
+                padding: 0 16px 64px;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                padding: 10px 16px;
+                gap: 10px;
+            }
+
+            .header-center {
+                max-width: none;
+            }
+
+            .header-search kbd {
+                display: none;
+            }
+
+            .notif-dropdown {
+                width: 300px;
+                right: -40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="header-logo">
+                    <div class="header-logo-icon">
+                        <svg viewBox="0 0 32 32" fill="none">
+                            <rect width="32" height="32" rx="8" fill="url(#logoGrad)"/>
+                            <path d="M13 8v7l-4 6a3 3 0 002.5 4.5h9A3 3 0 0023 21l-4-6V8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="12" y1="8" x2="20" y2="8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="14.5" cy="21" r="1.5" fill="rgba(255,255,255,0.6)"/>
+                            <circle cx="18" cy="19" r="1" fill="rgba(255,255,255,0.4)"/>
+                            <defs>
+                                <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
+                                    <stop stop-color="#6366f1"/>
+                                    <stop offset="1" stop-color="#818cf8"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <h1>ToolLabs</h1>
+                    <span class="header-label">Labs</span>
+                </div>
+                <nav class="header-nav">
+                    <a href="#" class="active">Explore</a>
+                    <a href="#">Categories</a>
+                    <a href="#">Featured</a>
+                </nav>
+            </div>
+
+            <div class="header-center">
+                <div class="header-search" onclick="this.querySelector('input').focus()">
+                    <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="7.5" cy="7.5" r="5.5"/>
+                        <line x1="12" y1="12" x2="16" y2="16"/>
+                    </svg>
+                    <input type="text" placeholder="Search tools..." id="searchInput">
+                    <kbd>/</kbd>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <!-- Notifications -->
+                <div class="notif-wrapper">
+                    <button class="header-icon-btn" title="Commits" id="notifBtn">
+                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 18c1.1 0 2-.9 2-2H8c0 1.1.9 2 2 2z"/>
+                            <path d="M16 11V8a6 6 0 10-12 0v3l-2 3h16l-2-3z"/>
+                        </svg>
+                        <span class="notif-dot" id="notifDot"></span>
+                    </button>
+                    <div class="notif-dropdown" id="notifDropdown">
+                        <div class="notif-dropdown-header">
+                            <h3>Recent Commits</h3>
+                            <span class="notif-count" id="notifCount"></span>
+                        </div>
+                        <ul class="notif-list" id="notifList"></ul>
+                        <div class="notif-dropdown-footer">
+                            <span>git log</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- User avatar -->
+                <div class="header-avatar" title="Profile">You</div>
+            </div>
+        </header>
+
+        <!-- Hero -->
+        <section class="hero">
+            <div class="hero-flask">
+                <svg viewBox="0 0 120 120" fill="none">
+                    <!-- Flask body -->
+                    <path d="M45 20V55L22 92a10 10 0 008.5 16h59a10 10 0 008.5-16L75 55V20"
+                          stroke="url(#flaskStroke)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <!-- Flask top -->
+                    <line x1="42" y1="20" x2="78" y2="20" stroke="url(#flaskStroke)" stroke-width="2.5" stroke-linecap="round"/>
+                    <!-- Liquid -->
+                    <path d="M30 88a10 10 0 008.5 16h43a10 10 0 008.5-16l-10-15H40z" fill="url(#liquidGrad)" opacity="0.5"/>
+                    <!-- Bubbles -->
+                    <circle class="bubble" cx="50" cy="85" r="3" fill="rgba(129,140,248,0.6)" style="--dur:2.5s;--delay:0s"/>
+                    <circle class="bubble" cx="65" cy="90" r="2" fill="rgba(99,102,241,0.5)" style="--dur:3s;--delay:0.8s"/>
+                    <circle class="bubble" cx="58" cy="88" r="2.5" fill="rgba(129,140,248,0.4)" style="--dur:2.8s;--delay:1.5s"/>
+                    <circle class="bubble" cx="72" cy="86" r="1.8" fill="rgba(99,102,241,0.5)" style="--dur:3.2s;--delay:2s"/>
+                    <defs>
+                        <linearGradient id="flaskStroke" x1="20" y1="20" x2="100" y2="108">
+                            <stop stop-color="#6366f1"/>
+                            <stop offset="1" stop-color="#818cf8"/>
+                        </linearGradient>
+                        <linearGradient id="liquidGrad" x1="30" y1="73" x2="90" y2="104">
+                            <stop stop-color="#6366f1"/>
+                            <stop offset="1" stop-color="#818cf8"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <h2 class="hero-title">ToolLabs</h2>
+            <p class="hero-subtitle">Experimental tools for creators — hand-crafted utilities built to spark ideas and streamline your workflow.</p>
+        </section>
+
+        <!-- Projects -->
+        <section class="projects">
+            <div class="section-label">Projects</div>
+            <div class="projects-grid">
+
+                <!-- ColorPicker Card -->
+                <a href="ColorPicker/ColorPicker Project-ToolLabs.html" class="card">
+                    <div class="card-preview">
+                        <svg viewBox="0 0 140 140" fill="none">
+                            <!-- Color wheel -->
+                            <circle cx="70" cy="70" r="52" stroke="url(#wheelRed)" stroke-width="18" stroke-dasharray="54.4 272" stroke-dashoffset="0"/>
+                            <circle cx="70" cy="70" r="52" stroke="url(#wheelYellow)" stroke-width="18" stroke-dasharray="54.4 272" stroke-dashoffset="-54.4"/>
+                            <circle cx="70" cy="70" r="52" stroke="url(#wheelGreen)" stroke-width="18" stroke-dasharray="54.4 272" stroke-dashoffset="-108.8"/>
+                            <circle cx="70" cy="70" r="52" stroke="url(#wheelCyan)" stroke-width="18" stroke-dasharray="54.4 272" stroke-dashoffset="-163.2"/>
+                            <circle cx="70" cy="70" r="52" stroke="url(#wheelBlue)" stroke-width="18" stroke-dasharray="54.4 272" stroke-dashoffset="-217.6"/>
+                            <circle cx="70" cy="70" r="52" stroke="url(#wheelMagenta)" stroke-width="18" stroke-dasharray="54.4 272" stroke-dashoffset="-272"/>
+                            <!-- Center -->
+                            <circle cx="70" cy="70" r="30" fill="#1c1c1f"/>
+                            <circle cx="70" cy="70" r="12" fill="#6366f1" opacity="0.7"/>
+                            <defs>
+                                <linearGradient id="wheelRed"><stop stop-color="#ff6b6b"/><stop offset="1" stop-color="#feca57"/></linearGradient>
+                                <linearGradient id="wheelYellow"><stop stop-color="#feca57"/><stop offset="1" stop-color="#48dbfb"/></linearGradient>
+                                <linearGradient id="wheelGreen"><stop stop-color="#48dbfb"/><stop offset="1" stop-color="#4ade80"/></linearGradient>
+                                <linearGradient id="wheelCyan"><stop stop-color="#4ade80"/><stop offset="1" stop-color="#818cf8"/></linearGradient>
+                                <linearGradient id="wheelBlue"><stop stop-color="#818cf8"/><stop offset="1" stop-color="#ff9ff3"/></linearGradient>
+                                <linearGradient id="wheelMagenta"><stop stop-color="#ff9ff3"/><stop offset="1" stop-color="#ff6b6b"/></linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div class="card-body">
+                        <span class="card-badge">Color Tool</span>
+                        <div class="card-title">Chromatic</div>
+                        <p class="card-description">Color Studio — Pick, extract, and build color palettes with an interactive color wheel, harmony modes, and accessibility checker.</p>
+                        <div class="card-arrow">
+                            Open project
+                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="3" y1="8" x2="13" y2="8"/>
+                                <polyline points="9,4 13,8 9,12"/>
+                            </svg>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Wireframe Card -->
+                <a href="Wireframe/Wireframe Project-ToolLabs.html" class="card">
+                    <div class="card-preview">
+                        <svg viewBox="0 0 140 140" fill="none">
+                            <!-- Browser chrome -->
+                            <rect x="15" y="20" width="110" height="100" rx="6" stroke="#6366f1" stroke-width="1.5" fill="none" opacity="0.6"/>
+                            <rect x="15" y="20" width="110" height="14" rx="6" fill="#6366f1" opacity="0.08"/>
+                            <circle cx="26" cy="27" r="2.5" fill="#ef4444" opacity="0.5"/>
+                            <circle cx="34" cy="27" r="2.5" fill="#f59e0b" opacity="0.5"/>
+                            <circle cx="42" cy="27" r="2.5" fill="#22c55e" opacity="0.5"/>
+                            <rect x="52" y="24.5" width="40" height="5" rx="2.5" fill="#6366f1" opacity="0.1"/>
+                            <!-- Navbar -->
+                            <rect x="20" y="38" width="100" height="8" rx="1.5" fill="#818cf8" opacity="0.12"/>
+                            <rect x="24" y="40" width="14" height="4" rx="1" fill="#6366f1" opacity="0.3"/>
+                            <rect x="42" y="40" width="8" height="4" rx="1" fill="#818cf8" opacity="0.15"/>
+                            <rect x="53" y="40" width="8" height="4" rx="1" fill="#818cf8" opacity="0.15"/>
+                            <rect x="64" y="40" width="8" height="4" rx="1" fill="#818cf8" opacity="0.15"/>
+                            <!-- Content blocks -->
+                            <rect x="20" y="50" width="45" height="30" rx="3" stroke="#6366f1" stroke-width="1" fill="#6366f1" opacity="0.05"/>
+                            <rect x="70" y="50" width="50" height="14" rx="2" fill="#818cf8" opacity="0.1"/>
+                            <rect x="70" y="67" width="35" height="4" rx="1" fill="#6366f1" opacity="0.12"/>
+                            <rect x="70" y="74" width="42" height="4" rx="1" fill="#6366f1" opacity="0.08"/>
+                            <!-- Cards row -->
+                            <rect x="20" y="84" width="30" height="28" rx="3" stroke="#818cf8" stroke-width="0.8" fill="#6366f1" opacity="0.04"/>
+                            <rect x="54" y="84" width="30" height="28" rx="3" stroke="#818cf8" stroke-width="0.8" fill="#6366f1" opacity="0.04"/>
+                            <rect x="88" y="84" width="32" height="28" rx="3" stroke="#818cf8" stroke-width="0.8" fill="#6366f1" opacity="0.04"/>
+                            <!-- Cursor -->
+                            <path d="M100 68l-4 12 3.5-1.5 2 4 2-1-2-4 3.5-1z" fill="#6366f1" opacity="0.6"/>
+                        </svg>
+                    </div>
+                    <div class="card-body">
+                        <span class="card-badge">Design Tool</span>
+                        <div class="card-title">Wireframe</div>
+                        <p class="card-description">Wireframe Creator — Drag-and-drop wireframing with 60+ UI elements, snap-to-grid, undo/redo, and real-time property editing.</p>
+                        <div class="card-arrow">
+                            Open project
+                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="3" y1="8" x2="13" y2="8"/>
+                                <polyline points="9,4 13,8 9,12"/>
+                            </svg>
+                        </div>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p class="footer-text"><span>ToolLabs</span> — Experimental tools for creators</p>
+        </footer>
+
+    </div>
+    <script>
+        // ── Commit data (populated from git log) ──
+        const commits = [
+            { hash: '956a5c1', msg: 'cssscssjsonetc.. fixes', time: 'just now' },
+            { hash: '130394e', msg: 'final colorpicker', time: 'recently' },
+            { hash: '27fb7dc', msg: 'fixes', time: '3 days ago' },
+            { hash: 'f8810a3', msg: 'added color picker', time: '3 days ago' },
+            { hash: 'f5d5960', msg: 'Initial commit', time: '3 days ago' },
+        ];
+
+        // ── Notification dropdown ──
+        const notifBtn = document.getElementById('notifBtn');
+        const notifDropdown = document.getElementById('notifDropdown');
+        const notifList = document.getElementById('notifList');
+        const notifCount = document.getElementById('notifCount');
+        const notifDot = document.getElementById('notifDot');
+
+        // Populate commits
+        notifCount.textContent = commits.length;
+        notifList.innerHTML = commits.map(c => `
+            <li class="notif-item">
+                <div class="notif-icon">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="8" cy="8" r="3"/>
+                        <line x1="0" y1="8" x2="5" y2="8"/>
+                        <line x1="11" y1="8" x2="16" y2="8"/>
+                    </svg>
+                </div>
+                <div class="notif-content">
+                    <div class="notif-msg">${c.msg}</div>
+                    <div class="notif-meta">
+                        <span class="notif-hash">${c.hash}</span>
+                        <span class="notif-time">${c.time}</span>
+                    </div>
+                </div>
+            </li>
+        `).join('');
+
+        // Toggle dropdown
+        notifBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            const isOpen = notifDropdown.classList.toggle('open');
+            if (isOpen) {
+                notifDot.style.display = 'none';
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', e => {
+            if (!notifDropdown.contains(e.target) && e.target !== notifBtn) {
+                notifDropdown.classList.remove('open');
+            }
+        });
+
+        // ── Search ──
+        const searchInput = document.getElementById('searchInput');
+
+        document.addEventListener('keydown', e => {
+            if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+                e.preventDefault();
+                searchInput.focus();
+            }
+            if (e.key === 'Escape') {
+                searchInput.blur();
+                notifDropdown.classList.remove('open');
+            }
+        });
+
+        searchInput.addEventListener('input', e => {
+            const q = e.target.value.toLowerCase();
+            document.querySelectorAll('.card').forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(q) ? '' : 'none';
+            });
+        });
+
+        // ── Nav buttons ──
+        document.querySelectorAll('.header-nav a').forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                // Update active state
+                document.querySelectorAll('.header-nav a').forEach(a => a.classList.remove('active'));
+                link.classList.add('active');
+
+                // Scroll to projects
+                document.querySelector('.projects').scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
