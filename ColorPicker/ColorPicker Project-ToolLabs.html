@@ -1261,13 +1261,6 @@
             transform: scale(0.95);
         }
 
-        .wheel-with-black {
-            display: flex;
-            align-items: flex-start;
-            gap: 16px;
-            padding-top: 20px;
-        }
-
         .a11y-color-picker-wrapper {
             display: flex;
             align-items: center;
@@ -1534,12 +1527,13 @@
             <!-- Color Wheel View -->
             <section class="view wheel-view active" id="wheelView">
                 <div class="wheel-section">
-                    <div class="wheel-with-black">
-                        <div class="wheel-container" id="wheelContainer">
+                    <div class="wheel-container" id="wheelContainer">
                             <canvas id="colorWheel"></canvas>
                         </div>
-                        <button class="black-btn" id="mainBlackBtn" title="Set to Black"></button>
-                    </div>
+                        <div style="display:flex;align-items:center;gap:8px;margin-top:12px;">
+                            <button class="black-btn" id="mainBlackBtn" title="Set to Black"></button>
+                            <span style="font-size:12px;color:var(--text-tertiary);">Set to Black</span>
+                        </div>
                     <div class="panel-card" style="margin-top:20px;">
                         <div class="hex-group" style="margin-bottom:16px;">
                             <div class="hex-field">
@@ -1681,14 +1675,6 @@
                             </button>
                         </div>
                         <div class="color-count">
-                            <label>Colors:</label>
-                            <div class="count-control">
-                                <button class="count-btn" id="decreaseColors">−</button>
-                                <span class="count-value" id="colorCount">5</span>
-                                <button class="count-btn" id="increaseColors">+</button>
-                            </div>
-                        </div>
-                        <div class="color-count" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
                             <label>Brightness:</label>
                             <input type="range" id="globalBrightness" min="10" max="100" value="100" style="flex:1;margin-left:12px;">
                             <span id="brightnessValue" style="width:36px;text-align:right;font-size:13px;">100%</span>
@@ -1699,6 +1685,14 @@
                     <div class="panel-card">
                         <h3>Palette</h3>
                         <div class="palette-grid" id="palettePanelColors"></div>
+                        <div class="color-count">
+                            <label>Colors:</label>
+                            <div class="count-control">
+                                <button class="count-btn" id="decreaseColors">−</button>
+                                <span class="count-value" id="colorCount">5</span>
+                                <button class="count-btn" id="increaseColors">+</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -2510,7 +2504,7 @@
             });
 
             $('increaseColors').addEventListener('click', () => {
-                if (state.colorCount < 10) {
+                if (state.colorCount < 50) {
                     state.colorCount++;
                     state.colors.push({ h: Math.random() * 360, s: 80, b: 80 });
                     $('colorCount').textContent = state.colorCount;
@@ -2666,22 +2660,21 @@
 
             $('applyExtracted').addEventListener('click', () => {
                 if (state.extractedColors.length) {
-                    const colorsToApply = state.extractedColors.slice(0, state.colorCount);
-                    state.colors = colorsToApply.map(hex => {
+                    // Apply ALL extracted colors - expand palette to fit
+                    state.colors = state.extractedColors.map(hex => {
                         const [r, g, b] = ColorUtils.hexToRgb(hex);
                         const [h, s, br] = ColorUtils.rgbToHsb(r, g, b);
                         return { h, s, b: br };
                     });
+                    state.colorCount = state.colors.length;
+                    state.selectedIndex = 0;
                     state.harmony = 'custom';
+                    $('colorCount').textContent = state.colorCount;
                     $$('.harmony-btn').forEach(b => b.classList.remove('active'));
                     document.querySelector('[data-harmony="custom"]').classList.add('active');
                     updateHandles();
                     updateUI();
-                    if (state.extractedColors.length > state.colorCount) {
-                        showToast(`Applied ${state.colorCount} of ${state.extractedColors.length} colors (palette limit)`);
-                    } else {
-                        showToast('Colors applied to palette!');
-                    }
+                    showToast(`Applied all ${state.colors.length} colors to palette!`);
                 }
             });
 
@@ -2811,6 +2804,19 @@
             });
         }
 
+        function updateGradientPreview() {
+            const stops = state.gradientStops.map(s => `${s.color} ${s.position}%`).join(', ');
+            let css;
+            switch (state.gradientType) {
+                case 'radial': css = `radial-gradient(circle, ${stops})`; break;
+                case 'conic': css = `conic-gradient(from ${state.gradientAngle}deg, ${stops})`; break;
+                default: css = `linear-gradient(${state.gradientAngle}deg, ${stops})`;
+            }
+            $('gradientPreview').style.background = css;
+            $('gradientTrack').style.background = `linear-gradient(to right, ${stops})`;
+            $('gradientCSS').textContent = css;
+        }
+
         function renderGradient() {
             const stops = state.gradientStops.map(s => `${s.color} ${s.position}%`).join(', ');
             let css;
@@ -2858,8 +2864,16 @@
                         <button class="gradient-color-remove" data-index="${i}" ${state.gradientStops.length <= 2 ? 'disabled' : ''}>&times;</button>
                     `;
 
-                    // Color picker change
+                    // Color picker change - update in-place to avoid destroying the native picker
                     item.querySelector('input[type="color"]').addEventListener('input', e => {
+                        state.gradientStops[i].color = e.target.value;
+                        item.querySelector('.gradient-color-swatch').style.background = e.target.value;
+                        item.querySelector('.gradient-color-hex').textContent = e.target.value.toUpperCase();
+                        updateGradientPreview();
+                    });
+
+                    // Full re-render when picker closes
+                    item.querySelector('input[type="color"]').addEventListener('change', e => {
                         state.gradientStops[i].color = e.target.value;
                         renderGradient();
                     });
@@ -3155,8 +3169,8 @@
             const canvas = $('extractCanvas');
             const ctx = canvas.getContext('2d');
 
-            const maxSize = 100;
-            const scale = Math.min(maxSize / img.width, maxSize / img.height);
+            const maxSize = 200;
+            const scale = Math.min(maxSize / img.width, maxSize / img.height, 1);
             canvas.width = img.width * scale;
             canvas.height = img.height * scale;
 
@@ -3164,19 +3178,23 @@
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const pixels = imageData.data;
 
-            // Simple color quantization
+            // Finer color quantization (step of 16 instead of 32)
             const colorCounts = {};
             for (let i = 0; i < pixels.length; i += 4) {
-                const r = Math.round(pixels[i] / 32) * 32;
-                const g = Math.round(pixels[i + 1] / 32) * 32;
-                const b = Math.round(pixels[i + 2] / 32) * 32;
+                if (pixels[i + 3] < 128) continue; // Skip transparent pixels
+                const r = Math.round(pixels[i] / 16) * 16;
+                const g = Math.round(pixels[i + 1] / 16) * 16;
+                const b = Math.round(pixels[i + 2] / 16) * 16;
                 const key = `${r},${g},${b}`;
                 colorCounts[key] = (colorCounts[key] || 0) + 1;
             }
 
+            const totalPixels = canvas.width * canvas.height;
+            const minPixels = Math.max(2, totalPixels * 0.002); // At least 0.2% of pixels
+
             const sortedColors = Object.entries(colorCounts)
+                .filter(([, count]) => count >= minPixels)
                 .sort((a, b) => b[1] - a[1])
-                .slice(0, 15)  // Get more to detect if there are too many
                 .map(([rgb]) => {
                     const [r, g, b] = rgb.split(',').map(Number);
                     return '#' + ColorUtils.rgbToHex(r, g, b);
