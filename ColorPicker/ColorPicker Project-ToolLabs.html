@@ -93,27 +93,31 @@
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
-        .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: conic-gradient(from 0deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #ff6b6b);
-            border-radius: 50%;
-            animation: spin 10s linear infinite;
+        .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: inherit;
+            flex-shrink: 0;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .logo-link svg {
+            width: 26px;
+            height: 26px;
         }
 
-        .logo h1 {
-            font-size: 20px;
+        .logo-title {
+            font-size: 14px;
             font-weight: 600;
-            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--text-primary);
+        }
+
+        .logo-title .logo-separator {
+            opacity: 0.5;
+            margin: 0 8px;
         }
 
         .nav-tabs {
@@ -1489,8 +1493,10 @@
     <div class="app">
         <header class="header">
             <div class="logo">
-                <div class="logo-icon"></div>
-                <h1>ColorPicker</h1>
+                <a href="../Labs.html" class="logo-link" title="Back to ToolLabs">
+                    <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="url(#lgH)"/><path d="M13 8v7l-4 6a3 3 0 002.5 4.5h9A3 3 0 0023 21l-4-6V8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="8" x2="20" y2="8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="14.5" cy="21" r="1.5" fill="rgba(255,255,255,0.6)"/><circle cx="18" cy="19" r="1" fill="rgba(255,255,255,0.4)"/><defs><linearGradient id="lgH" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#818cf8"/></linearGradient></defs></svg>
+                </a>
+                <div class="logo-title">Labs <span class="logo-separator">|</span> Color Picker</div>
             </div>
             <nav class="nav-tabs">
                 <button class="nav-tab active" data-view="wheel">Color Wheel</button>
@@ -2391,8 +2397,10 @@
             $('aSlider').value = $('aInput').value = a;
             $('bSlider').value = $('bInput').value = bb;
 
-            // HEX
-            $('hexInput').value = hex;
+            // HEX - don't update if user is typing
+            if (document.activeElement !== $('hexInput')) {
+                $('hexInput').value = hex;
+            }
 
             // Update slider track backgrounds
             const hue = color.h;
@@ -2602,17 +2610,19 @@
                 input.addEventListener('change', update);
             });
 
-            // Hex input
-            $('hexInput').addEventListener('change', e => {
+            // Hex input - update live as user types
+            const handleHexInput = e => {
                 const hex = e.target.value.replace('#', '');
                 if (/^[0-9A-Fa-f]{6}$/.test(hex)) {
                     const [r, g, b] = ColorUtils.hexToRgb(hex);
                     const [h, s, br] = ColorUtils.rgbToHsb(r, g, b);
                     state.colors[state.selectedIndex] = { h, s, b: br };
                     updateHandles();
-                    updateUI();
+                    renderPalette();
                 }
-            });
+            };
+            $('hexInput').addEventListener('input', handleHexInput);
+            $('hexInput').addEventListener('change', handleHexInput);
 
             // Copy hex
             $('copyHex').addEventListener('click', () => {
