@@ -4,8 +4,31 @@
 
 * Chromatic Color Studio 
 * Wireframe Playground
+* Aesthetica — Aesthetic Checker
 
 <img width="1470" height="763" alt="image" src="https://github.com/user-attachments/assets/4c4c0061-fcfe-475d-b395-a5331e21627b" />
+
+## Running locally
+
+Most tools are plain HTML and open fine by double-clicking. **Aesthetica** is the
+exception: it generates AI mockups that render through `blob:` URLs and call an
+API with `fetch()`, which browsers block on `file://` pages. Serve the folder
+over localhost instead:
+
+```bash
+./run.sh            # or: python3 serve.py [port]   (default 8787)
+```
+
+This opens the Aesthetic Checker at `http://localhost:8787/AestheticChecker/index.html`
+(if that port is busy it automatically picks the next free one).
+
+## Aesthetica — Aesthetic Checker
+
+[https://krishnasaigaruda.github.io/Labs/AestheticChecker/index.html](https://krishnasaigaruda.github.io/Labs/AestheticChecker/index.html)
+
+Describe your website and AI designs the whole look — brand name, color palette,
+font pairing, mood and layout — then builds a live, downloadable HTML mockup from
+your words. Powered by Pollinations (free, no API key).
 
 
 ## Chromatic Color Studio
